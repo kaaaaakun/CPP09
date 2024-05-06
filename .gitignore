@@ -1,0 +1,11 @@
+*.back
+*.o
+*.a
+.DS*
+.vscode/
+*.un~
+*.swp
+*.json
+*.plist
+a.out
+obj/
