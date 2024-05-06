@@ -6,12 +6,12 @@
 #    By: tokazaki <tokazaki@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/07 16:08:51 by tokazaki          #+#    #+#              #
-#    Updated: 2024/02/15 15:57:00 by tokazaki         ###   ########.fr        #
+#    Updated: 2024/05/05 09:35:37 by tokazaki         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # -- program name --
-NAME = main
+NAME = btc
 
 # -- directories --
 INCLUDE = -I ./
@@ -69,10 +69,13 @@ $(OBJDIR)/%.o.debug: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 # Other targets +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-.PHONY: format
+.PHONY: format run
 
 format:
 	clang-format --style=Google -i $(SRCS) $(HEADERS)
+
+run: $(NAME)
+	./$(NAME) input.txt
 
 -include $(DEPENDS)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
