@@ -1,13 +1,5 @@
 #include "BitcoinExchange.hpp"
 
-#include <cstdio>
-#include <fstream>
-#include <iterator>
-#include <ostream>
-#include <sstream>
-#include <string>
-#include <utility>
-
 //-- -- --  -- BitcoinExchange -- -- --  -- //
 // BitcoinExchange canonical form
 BitcoinExchange::BitcoinExchange(const std::string csvDataFile)
@@ -44,10 +36,11 @@ void BitcoinExchange::Exchange(std::string inputFile) {
     throw std::invalid_argument("Error: Invalid file header : " + line);
   while (std::getline(input, line)) {
     try {
-    if (utils::SetLine(line, "|", pair) == false)
-      throw std::invalid_argument("Error: Invalid line format : " + line);
+      if (utils::SetLine(line, "|", pair) == false)
+        throw std::invalid_argument("Error: Invalid line format : " + line);
       if (utils::CheckData(pair) == false)
-        throw std::invalid_argument("Error: too large a number : " + pair.second);
+        throw std::invalid_argument("Error: too large a number : " +
+                                    pair.second);
       result = dataBase_.LowerBound(pair.first);
       PrintResult(pair, result);
     } catch (std::exception& e) {

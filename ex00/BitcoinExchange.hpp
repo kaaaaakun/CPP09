@@ -2,11 +2,14 @@
 #define BITCOINEXCHANGE_HPP
 
 #include <cstddef>
+#include <cstdio>
 #include <exception>
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <utility>
