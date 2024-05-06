@@ -37,7 +37,6 @@ class BitcoinExchange {
   // members
   DataBase dataBase_;
   // private functions
-  bool CheckData(const std::pair<std::string, std::string>& pair) const;
   bool SetLine(std::string line, std::pair<std::string, std::string>& pair);
   void PrintResult(const std::pair<std::string, std::string> pair,
                    const std::pair<std::string, std::string> result) const;
@@ -70,6 +69,7 @@ bool SetLine(std::string line, std::string delimiter,
              std::pair<std::string, std::string>& pair);
 bool IsValidHeader(std::string line, std::string delimiter, std::string key,
                    std::string value);
+bool CheckData(const std::pair<std::string, std::string>& pair);
 }  // namespace utils
 
 #endif  // BITCOINEXCHANGE_HPP

@@ -21,26 +21,6 @@ BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& other) {
   return *this;
 }
 
-bool BitcoinExchange::CheckData(
-    const std::pair<std::string, std::string>& pair) const {
-  double price;
-
-  if (utils::IsValidDate(pair.first) == false) {
-    std::cerr << " Error: Invalid date : " << pair.first << std::endl;
-    return false;
-  }
-  if (utils::IsValidDouble(pair.second) == false) {
-    std::cerr << "Error: Invalid price : " << pair.second << std::endl;
-    return false;
-  }
-  price = utils::StrToDouble(pair.second);
-  if (1000 < price) {
-    std::cerr << "Error: too large a number : " << pair.second << std::endl;
-    return false;
-  }
-  return true;
-}
-
 void BitcoinExchange::PrintResult(
     const std::pair<std::string, std::string> pair,
     const std::pair<std::string, std::string> result) const {
@@ -63,13 +43,16 @@ void BitcoinExchange::Exchange(std::string inputFile) {
   if (utils::IsValidHeader(line, "|", "date", "value") == false)
     throw std::invalid_argument("Error: Invalid file header : " + line);
   while (std::getline(input, line)) {
-    if (utils::SetLine(line, "|", pair) == false) {
-      std::cerr << "Error: Invalid line format : " << line << std::endl;
-      continue;
+    try {
+    if (utils::SetLine(line, "|", pair) == false)
+      throw std::invalid_argument("Error: Invalid line format : " + line);
+      if (utils::CheckData(pair) == false)
+        throw std::invalid_argument("Error: too large a number : " + pair.second);
+      result = dataBase_.LowerBound(pair.first);
+      PrintResult(pair, result);
+    } catch (std::exception& e) {
+      std::cerr << e.what() << std::endl;
     }
-    if (CheckData(pair) == false) continue;
-    result = dataBase_.LowerBound(pair.first);
-    PrintResult(pair, result);
   }
 }
 
@@ -81,17 +64,24 @@ DataBase::DataBase(std::string dataFile) : dataFile_(dataFile) {
   std::ifstream file(dataFile_);
   std::string line;
 
-  if (!file)
-    throw std::invalid_argument("Error: Cannot open file : " + dataFile_);
-  std::getline(file, line);
-  if (utils::IsValidHeader(line, ",", "date", "exchange_rate") == false)
-    throw std::invalid_argument("Error: Invalid file header : " + line);
-  while (std::getline(file, line)) {
-    if (utils::SetLine(line, ",", pair) == false)
-      throw std::invalid_argument("Error: Invalid file format : " + line);
-    dataBase_map_.insert(pair);
+  try {
+    if (!file)
+      throw std::invalid_argument("Error: Cannot open file : " + dataFile_);
+    std::getline(file, line);
+    if (utils::IsValidHeader(line, ",", "date", "exchange_rate") == false)
+      throw std::invalid_argument("Error: Invalid file header : " + line);
+    while (std::getline(file, line)) {
+      if (utils::SetLine(line, ",", pair) == false)
+        throw std::invalid_argument("Error: Invalid file format : " + line);
+      utils::CheckData(pair);
+      dataBase_map_.insert(pair);
+    }
+    size_ = dataBase_map_.size();
+  } catch (std::exception& e) {
+    std::string msg = "DataBase ";
+    msg.append(e.what());
+    throw std::invalid_argument(msg);
   }
-  size_ = dataBase_map_.size();
 }
 DataBase::~DataBase() {}
 DataBase::DataBase(const DataBase& other) {
@@ -125,7 +115,6 @@ const std::pair<std::string, std::string> DataBase::LowerBound(
     } else
       count = step;
   }
-  // std::cout << "first: " << first->first << " key: " << key << std::endl;
   return (make_pair(first->first, first->second));
 }
 
@@ -148,8 +137,9 @@ bool IsValidDouble(std::string str) {
   }
   if (str[count] == '\0')
     return true;
+  else if (str[++count] == '\0')
+    return false;
   else {
-    count++;
     while (str[count] != '\0') {
       if (!isdigit(str[count])) return false;
       count++;
@@ -247,4 +237,17 @@ bool IsValidHeader(std::string line, std::string delimiter, std::string key,
   if (header.first != key || header.second != value) return false;
   return true;
 }
+
+bool CheckData(const std::pair<std::string, std::string>& pair) {
+  double price;
+
+  if (IsValidDate(pair.first) == false)
+    throw std::invalid_argument("Error: Invalid date : " + pair.first);
+  if (IsValidDouble(pair.second) == false)
+    throw std::invalid_argument("Error: Invalid price : " + pair.second);
+  price = StrToDouble(pair.second);
+  if (1000 < price) return false;
+  return true;
+}
+
 }  // namespace utils
