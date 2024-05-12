@@ -123,15 +123,15 @@ void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
   // インサートソート
   std::cout << "------------------------------------------------" << std::endl;
   std::cout << "chunk size : " << chunk_size << std::endl;
-  for (size_t i = chunk_size * 2; i + chunk_size <= container_size;
+  for (size_t i = chunk_size * 3-1; i + chunk_size <= container_size;
        i += chunk_size * 2) {
     typename Container::iterator it0 = it;  // 比較対象になるイテレーター
-    std::advance(it0, i + chunk_size - 1);
+    std::advance(it0, i);
     std::cout << "it0: " << *it0 << std::endl;
-    for (size_t j = 0; j + chunk_size <= container_size; j += chunk_size) {
+    for (size_t j = chunk_size - 1; j + chunk_size <= container_size; j += chunk_size) {
       // イテレータを移動して、正しい比較を行う
       typename Container::iterator it1 = it;  // 挿入場所
-      std::advance(it1, j + chunk_size - 1);
+      std::advance(it1, j );
       std::cout << "-it1: " << *it1 << std::endl;
       if (it0 == it1)
           break ;
