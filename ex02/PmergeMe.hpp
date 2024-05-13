@@ -14,15 +14,27 @@ class PmergeMe {
   ~PmergeMe() {}
   static void RecursiveMergeInsertionSort(size_t chunk_size,
                                           Container &container);
-  void ChunkedMergeSort(size_t chunk_size, Container &container);
-  void ChunkedInsertSort(size_t chunk_size, Container &container);
+  static void ChunkedMergeSort(size_t chunk_size, Container &container);
+  static void ChunkedInsertSort(size_t chunk_size, Container &container);
   static Container ArgvToIntContainer(char *argv[]);
+  static typename Container::iterator Advance(typename Container::iterator it,
+                                              long long int count);
+
+  static void Debug(Container &container);
 
  public:
   static Container Sort(char *argv[]);
 };
 
 #endif  // PMERGEME_HPP
+
+// std::advance を使いやすく
+template <class Container>
+typename Container::iterator PmergeMe<Container>::Advance(
+    typename Container::iterator it, long long int count) {
+  std::advance(it, count);
+  return it;
+}
 
 // ソートするメインの関数
 template <class Container>
@@ -43,39 +55,55 @@ Container PmergeMe<Container>::ArgvToIntContainer(char *argv[]) {
   return container;
 }
 
+// チャンクごとのマージソートを行う
 template <class Container>
 void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
                                            Container &container) {
-  std::cout << "chunk size : " << chunk_size << std::endl;
   size_t container_size = container.size();
-
   typename Container::iterator it = container.begin();
-  // int tmp;
-  //  forで比較して、入れ替えを行う
-  for (size_t i = 0; i + chunk_size * 2 < container_size; i += chunk_size * 2) {
-    // イテレータを移動して、正しい比較を行う
-    typename Container::iterator it0 = it;  // 挿入場所
-    typename Container::iterator it1 = it;  // 最初のイテレーター
-    typename Container::iterator it2 = it;  // 次のイテレーター
-    std::advance(it0, i);
-    std::advance(it1, i + chunk_size - 1);
-    std::advance(it2, i + chunk_size * 2 - 1);
-    std::cout << "it0: " << *it0 << " ";
-    std::cout << "it1: " << *it1 << " it2: " << *it2 << std::endl;
+
+  //std::cout << "-- chunk_size : " << chunk_size << " -- " << std::endl;
+  for (size_t i = 0; i + chunk_size * 2 <= container_size; i += chunk_size * 2) {
+    typename Container::iterator it0 = Advance(it, i);
+    typename Container::iterator it1 = Advance(it, i + chunk_size - 1);
+    typename Container::iterator it2 = Advance(it, i + chunk_size * 2 - 1);
+    //std::cout << "比較 : " << *it1 << " : " << *it2 << std::endl;
+    // ペアの値を昇順にする
     if (*it2 < *it1) {
-      std::cout << "rotate it2:" << *it2 << std::endl;
-      std::advance(it1, 1);  // it1を1つ進める
-      std::advance(it2, 1);  // it1を1つ進める
+      std::advance(it1, 1);
+      std::advance(it2, 1);
       std::rotate(it0, it1, it2);
     }
   }
 }
 
+// 　チャンクを考慮して、インサーションソートを行う
 template <class Container>
 void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
                                             Container &container) {
-  (void)chunk_size;
-  (void)container;
+  size_t container_size = container.size();
+  typename Container::iterator it = container.begin();
+
+  //std::cout << "-- chunk_size : " << chunk_size << " -- " << std::endl;
+  for (size_t i = chunk_size * 3 - 1; i + chunk_size <= container_size;
+       i += chunk_size * 2) {
+    typename Container::iterator it0 = Advance(it, i);  // 挿入される値
+    for (size_t j = chunk_size - 1; j + chunk_size <= container_size && i != j;
+         j += chunk_size) {
+      typename Container::iterator it1 = Advance(it, j);
+     // std::cout << "比較 : " << *it1 << " : " << *it0 << std::endl;
+      if (*it0 < *it1) {
+        std::advance(it0, 1);  // it0を1つ進める
+        typename Container::iterator it2 = Advance(it0, -chunk_size);
+        // std::cout << "rotate it2:" << *it2 << std::endl;
+       // std::cout << "入れ替え" << std::endl;
+
+        std::advance(it1, -chunk_size + 1);
+        std::rotate(it1, it2, it0);
+        break;
+      }
+    }
+  }
 }
 
 // 再帰でソートする
@@ -83,76 +111,21 @@ template <class Container>
 void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
                                                       Container &container) {
   size_t container_size = container.size();
-  std::cout << "------------------------------------------------" << std::endl;
-  // PmergeMe(chunk_size,container);
-  std::cout << "chunk size : " << chunk_size << std::endl;
 
-  typename Container::iterator it = container.begin();
-  // int tmp;
-  //  forで比較して、入れ替えを行う
-  for (size_t i = 0; i + chunk_size * 2 < container_size; i += chunk_size * 2) {
-    // イテレータを移動して、正しい比較を行う
-    typename Container::iterator it0 = it;  // 挿入場所
-    typename Container::iterator it1 = it;  // 最初のイテレーター
-    typename Container::iterator it2 = it;  // 次のイテレーター
-    std::advance(it0, i);
-    std::advance(it1, i + chunk_size - 1);
-    std::advance(it2, i + chunk_size * 2 - 1);
-    std::cout << "it0: " << *it0 << " ";
-    std::cout << "it1: " << *it1 << " it2: " << *it2 << std::endl;
-    if (*it2 < *it1) {
-      std::cout << "rotate" << std::endl;
-      std::advance(it1, 1);  // it1を1つ進める
-      std::advance(it2, 1);  // it1を1つ進める
-      std::rotate(it0, it1, it2);
-    }
-  }
-
-  // 再帰処理
-  // chunk_size*2がcontainerのサイズを上回ってたら、再帰
-  std::cout << "debug:";
-  for (typename Container::iterator it = container.begin();
-       it != container.end(); ++it)
-    std::cout << *it << " ";
-  std::cout << std::endl;
-  if (chunk_size * 4 < container_size)
+  ChunkedMergeSort(chunk_size, container);
+    Debug(container);
+  if (chunk_size * 4 <= container_size)
     RecursiveMergeInsertionSort(chunk_size * 2, container);
   else
     return;
+  ChunkedInsertSort(chunk_size, container);
+    Debug(container);
+}
 
-  // インサートソート
-  std::cout << "------------------------------------------------" << std::endl;
-  std::cout << "chunk size : " << chunk_size << std::endl;
-  for (size_t i = chunk_size * 3-1; i + chunk_size <= container_size;
-       i += chunk_size * 2) {
-    typename Container::iterator it0 = it;  // 比較対象になるイテレーター
-    std::advance(it0, i);
-    std::cout << "it0: " << *it0 << std::endl;
-    for (size_t j = chunk_size - 1; j + chunk_size <= container_size; j += chunk_size) {
-      // イテレータを移動して、正しい比較を行う
-      typename Container::iterator it1 = it;  // 挿入場所
-      std::advance(it1, j );
-      std::cout << "-it1: " << *it1 << std::endl;
-      if (it0 == it1)
-          break ;
-      else if (*it0 < *it1) {
-        std::advance(it0, 1);                    // it0を1つ進める
-        typename Container::iterator it2 = it0;  // 挿入場所
-        std::advance(it2, -chunk_size);
-        std::cout << "rotate it2:" << *it2 << std::endl;
-
-        std::advance(it1, -chunk_size+1);
-
-        std::rotate(it1, it2, it0);
-        break;
-      }
-    }
-    std::cout << "debug:";
-    for (typename Container::iterator it = container.begin();
-         it != container.end(); ++it)
-      std::cout << *it << " ";
-    std::cout << std::endl;
-  }
+// デバック用
+template <class Container>
+void PmergeMe<Container>::Debug(Container &container) {
+	return ;
   std::cout << "debug:";
   for (typename Container::iterator it = container.begin();
        it != container.end(); ++it)
