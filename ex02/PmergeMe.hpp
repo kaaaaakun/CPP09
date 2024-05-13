@@ -10,19 +10,17 @@
 class StopWatch {
  public:
   StopWatch() : start_(0), stop_(0) {}
-  void Start() { start_ = std::clock(); }
-  void Stop() {
-    stop_ = std::clock();
-    std::cout << "Time: "
-              << static_cast<double>(stop_ - start_) / CLOCKS_PER_SEC * 1000.0
-              << " ms" << std::endl;
-  }
+  ~StopWatch() {}
+  void Start();
+  void Stop();
 
  private:
   std::clock_t start_;
   std::clock_t stop_;
-};
 
+  StopWatch(const StopWatch &obj) : start_(obj.start_), stop_(obj.stop_) {}
+  StopWatch &operator=(const StopWatch &obj);
+};
 
 template <class Container>
 class PmergeMe {
@@ -45,14 +43,6 @@ class PmergeMe {
 
 #endif  // PMERGEME_HPP
 
-// std::advance を使いやすく
-template <class Container>
-typename Container::iterator PmergeMe<Container>::Advance(
-    typename Container::iterator it, long long int count) {
-  std::advance(it, count);
-  return it;
-}
-
 // ソートするメインの関数
 template <class Container>
 Container PmergeMe<Container>::Sort(char *argv[]) {
@@ -62,13 +52,26 @@ Container PmergeMe<Container>::Sort(char *argv[]) {
   return container;
 }
 
+// 再帰でソートする
+template <class Container>
+void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
+                                                      Container &container) {
+  size_t container_size = container.size();
+
+  ChunkedMergeSort(chunk_size, container);
+  if (chunk_size * 4 <= container_size)
+    RecursiveMergeInsertionSort(chunk_size * 2, container);
+  else
+    return;
+  ChunkedInsertSort(chunk_size, container);
+}
+
 // ダブルポインタから型の変換を行う
 template <class Container>
 Container PmergeMe<Container>::ArgvToIntContainer(char *argv[]) {
   Container container;
 
   for (int i = 1; argv[i] != NULL; ++i) container.push_back(std::atoi(argv[i]));
-
   return container;
 }
 
@@ -86,7 +89,6 @@ void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
     typename Container::iterator it1 = Advance(it, i + chunk_size - 1);
     typename Container::iterator it2 = Advance(it, i + chunk_size * 2 - 1);
     // std::cout << "比較 : " << *it1 << " : " << *it2 << std::endl;
-    //  ペアの値を昇順にする
     if (*it2 < *it1) {
       std::advance(it1, 1);
       std::advance(it2, 1);
@@ -105,39 +107,29 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
   // std::cout << "-- chunk_size : " << chunk_size << " -- " << std::endl;
   for (size_t i = chunk_size * 3 - 1; i + chunk_size <= container_size;
        i += chunk_size * 2) {
-    typename Container::iterator it0 = Advance(it, i);  // 挿入される値
+    typename Container::iterator inserted_it_end = Advance(it, i);
+
     for (size_t j = chunk_size - 1; j + chunk_size <= container_size && i != j;
          j += chunk_size) {
-      typename Container::iterator it1 = Advance(it, j);
-      // std::cout << "比較 : " << *it1 << " : " << *it0 << std::endl;
-      if (*it0 < *it1) {
-        std::advance(it0, 1);  // it0を1つ進める
-        typename Container::iterator it2 = Advance(it0, -chunk_size);
-        // std::cout << "rotate it2:" << *it2 << std::endl;
-        // std::cout << "入れ替え" << std::endl;
-
-        std::advance(it1, -chunk_size + 1);
-        std::rotate(it1, it2, it0);
+      typename Container::iterator compared_it_end = Advance(it, j);
+      // std::cout << "比較 : " << *compared_it_end << " : " <<
+      // *inserted_it_end << std::endl;
+      if (*inserted_it_end < *compared_it_end) {
+        std::rotate(Advance(compared_it_end, 1 - chunk_size),
+                    Advance(inserted_it_end, 1 - chunk_size),
+                    Advance(inserted_it_end, 1));
         break;
       }
     }
   }
 }
 
-// 再帰でソートする
+// std::advance を使いやすく
 template <class Container>
-void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
-                                                      Container &container) {
-  size_t container_size = container.size();
-
-  ChunkedMergeSort(chunk_size, container);
-  Debug(container);
-  if (chunk_size * 4 <= container_size)
-    RecursiveMergeInsertionSort(chunk_size * 2, container);
-  else
-    return;
-  ChunkedInsertSort(chunk_size, container);
-  Debug(container);
+typename Container::iterator PmergeMe<Container>::Advance(
+    typename Container::iterator it, long long int count) {
+  std::advance(it, count);
+  return it;
 }
 
 // デバック用

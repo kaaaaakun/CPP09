@@ -62,8 +62,8 @@ int main(int argc, char *argv[]) {
     std::cout << "list  : ";
     sw.Stop();
 
-    //PutSorted(vec2);
-    //PutSorted(lst);
+    // PutSorted(vec2);
+    // PutSorted(lst);
 
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
