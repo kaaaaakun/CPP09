@@ -105,8 +105,7 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
   typename Container::iterator it = container.begin();
 
   // std::cout << "-- chunk_size : " << chunk_size << " -- " << std::endl;
-  for (size_t i = chunk_size * 3 - 1; i < container_size;
-       i += chunk_size * 2) {
+  for (size_t i = chunk_size * 3 - 1; i < container_size; i += chunk_size * 2) {
     typename Container::iterator inserted_it_end = Advance(it, i);
 
     for (size_t j = chunk_size - 1; j < container_size && i != j;

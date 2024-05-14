@@ -69,7 +69,7 @@ $(OBJDIR)/%.o.debug: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 # Other targets +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-.PHONY: format run
+.PHONY: format run test
 
 format:
 	clang-format --style=Google -i $(SRCS) $(HEADERS)
@@ -77,14 +77,13 @@ format:
 run: $(NAME)
 	./$(NAME) 3 4 10 2 5 7 6 9 0 100 11
 
-run2: $(NAME)
-	./$(NAME) 10 9 8 7 6 5 4 3 2 1
-
-run3: $(NAME)
-	./$(NAME) 10 9 8 7 6 5 4 3 
-
-run4: $(NAME)
-	./$(NAME) 10 9 8 7 6 5 4 3 2 1 0  0 0 0 
-
+test: $(NAME)
+	@ echo "---  subject nomal test "
+	./$(NAME) 3 5 9 7 4
+	@ echo "---  subject huge test"
+	./$(NAME) `shuf -i 1-100000 -n 3000 | tr "\n" " "`
+	@ echo "---  subject error test"
+	./$(NAME) "-1" "2"
+	
 -include $(DEPENDS)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#

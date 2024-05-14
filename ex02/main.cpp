@@ -8,9 +8,10 @@ bool CheckArgs(char *argv[]) {
     bool sign_flag = false;
     bool nbr_flag = false;
     for (size_t j = 0; argv[i][j] != '\0'; ++j) {
-      if ((argv[i][j] == '+' || argv[i][j] == '-') && sign_flag == false)
+      if ((argv[i][j] == '+' || argv[i][j] == '-') && sign_flag == false) {
         sign_flag = true;
-      else if (std::isdigit(argv[i][j]) == 0)
+        if (argv[i][j] == '-') return false;
+      } else if (std::isdigit(argv[i][j]) == 0)
         return false;
       else {
         sign_flag = true;
@@ -24,7 +25,13 @@ bool CheckArgs(char *argv[]) {
 
 void PutInput(char *argv[]) {
   std::cout << "Input : ";
-  for (size_t i = 1; argv[i] != NULL; ++i) std::cout << argv[i] << " ";
+  for (size_t i = 1; argv[i] != NULL; ++i) {
+    std::cout << argv[i] << " ";
+    if (i == 20) {
+      std::cout << "......" << std::endl;
+      return;
+    }
+  }
   std::cout << std::endl;
 }
 
@@ -32,15 +39,19 @@ template <typename Container>
 void PutSorted(Container &container) {
   std::cout << "Sorted: ";
   for (typename Container::iterator it = container.begin();
-       it != container.end(); ++it)
+       it != container.end(); ++it) {
     std::cout << *it << " ";
+    if (std::distance(container.begin(), it) == 20) {
+      std::cout << "......" << std::endl;
+      return;
+    }
+  }
   std::cout << std::endl;
 }
-
 int main(int argc, char *argv[]) {
   try {
     if (argc < 2 || !CheckArgs(&argv[1])) {
-      std::cerr << "だめだよ" << std::endl;
+      std::cerr << "ERROR" << std::endl;
       std::cerr << "Usage: ./PmergeMe [int] [int] ..." << std::endl;
       return EXIT_FAILURE;
     }

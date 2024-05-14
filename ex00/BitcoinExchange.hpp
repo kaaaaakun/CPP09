@@ -13,7 +13,6 @@
 #include <sstream>
 #include <string>
 #include <utility>
-#include <vector>
 
 #define DEFAULT_CSV_DATA_FILE "data.csv"
 
