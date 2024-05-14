@@ -50,16 +50,16 @@ int main(int argc, char *argv[]) {
     std::vector<int> vec = PmergeMe<std::vector<int> >::Sort(argv);
     PutSorted(vec);
 
-    std::cout << "number of element" << vec.size() << std::endl;
+    std::cout << "number of elements : " << vec.size() << std::endl;
 
     sw.Start();
     std::vector<int> vec2 = PmergeMe<std::vector<int> >::Sort(argv);
-    std::cout << "vector: ";
+    std::cout << "vector: processing time : ";
     sw.Stop();
 
     sw.Start();
     std::list<int> lst = PmergeMe<std::list<int> >::Sort(argv);
-    std::cout << "list  : ";
+    std::cout << "list  : processing time : ";
     sw.Stop();
 
     // PutSorted(vec2);

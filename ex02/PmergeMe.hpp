@@ -105,11 +105,11 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
   typename Container::iterator it = container.begin();
 
   // std::cout << "-- chunk_size : " << chunk_size << " -- " << std::endl;
-  for (size_t i = chunk_size * 3 - 1; i + chunk_size <= container_size;
+  for (size_t i = chunk_size * 3 - 1; i < container_size;
        i += chunk_size * 2) {
     typename Container::iterator inserted_it_end = Advance(it, i);
 
-    for (size_t j = chunk_size - 1; j + chunk_size <= container_size && i != j;
+    for (size_t j = chunk_size - 1; j < container_size && i != j;
          j += chunk_size) {
       typename Container::iterator compared_it_end = Advance(it, j);
       // std::cout << "比較 : " << *compared_it_end << " : " <<
@@ -135,8 +135,7 @@ typename Container::iterator PmergeMe<Container>::Advance(
 // デバック用
 template <class Container>
 void PmergeMe<Container>::Debug(Container &container) {
-  return;
-  std::cout << "debug:";
+  std::cout << "debug : ";
   for (typename Container::iterator it = container.begin();
        it != container.end(); ++it)
     std::cout << *it << " ";
