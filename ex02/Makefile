@@ -75,7 +75,11 @@ format:
 	clang-format --style=Google -i $(SRCS) $(HEADERS)
 
 run: $(NAME)
-	./$(NAME) 3 4 10 2 5 7 6 9 0 100 11
+	#./$(NAME) 21 20 17 16 19 18 15 14 13 12 11 10 9 5 3 4 1 6 7 2 8
+	./$(NAME) 21 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11
+
+run2: $(NAME)
+	./$(NAME) 1 21 20 19 17 10 16 15 14 13 12 11 18 9 8 7 6 5 4 3 2 
 
 test: $(NAME)
 	@ echo "---  subject nomal test "

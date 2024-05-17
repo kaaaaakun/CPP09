@@ -1,3 +1,4 @@
+#include <deque>
 #include <exception>
 #include <iostream>
 
@@ -63,15 +64,20 @@ int main(int argc, char *argv[]) {
 
     std::cout << "number of elements : " << vec.size() << std::endl;
 
-    sw.Start();
-    std::vector<int> vec2 = PmergeMe<std::vector<int> >::Sort(argv);
-    std::cout << "vector: processing time : ";
-    sw.Stop();
-
-    sw.Start();
-    std::list<int> lst = PmergeMe<std::list<int> >::Sort(argv);
-    std::cout << "list  : processing time : ";
-    sw.Stop();
+    //    sw.Start();
+    //    std::vector<int> vec2 = PmergeMe<std::vector<int> >::Sort(argv);
+    //    std::cout << "vector: processing time : ";
+    //    sw.Stop();
+    //
+    //    sw.Start();
+    //    std::list<int> lst = PmergeMe<std::list<int> >::Sort(argv);
+    //    std::cout << "list  : processing time : ";
+    //    sw.Stop();
+    //
+    //    sw.Start();
+    //    std::deque<int> dequ = PmergeMe<std::deque<int> >::Sort(argv);
+    //    std::cout << "dequ  : processing time : ";
+    //    sw.Stop();
 
     // PutSorted(vec2);
     // PutSorted(lst);
