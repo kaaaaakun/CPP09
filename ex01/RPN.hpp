@@ -13,7 +13,7 @@ class RPN {
 
  private:
   static bool IsOperator(char c);
-  static void Calculate(std::stack<std::string>& st);
+  static void Calculate(std::stack<std::string>& st, std::string ope);
   static double StrToDouble(std::string str);
   static void IsValidDouble(std::string str);
 };
