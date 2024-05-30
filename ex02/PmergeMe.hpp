@@ -38,18 +38,49 @@ class PmergeMe {
   static Iterator LowerBound(Iterator first, Iterator last,
                              const Iterator value, size_t chunk_size);
   static void Debug(Container &container, size_t size);
+  static void Debug(std::string str);
+  static void Debug(Iterator it);
 
   static size_t CalcJacob(size_t n, size_t max_size);
-  static void InsertBack(Container &container, const Iterator &reverse_end_it,
-                         const Iterator &reverse_first_it, size_t chunk_size);
 
  public:
   static Container Sort(char *argv[]);
 };
 
+class Debug {
+ public:
+  template <class T>
+  Debug &operator<<(T t) {
+    std::cout << t;
+    return *this;
+  }
+  static Debug &cout() {
+    static Debug instance;
+    return instance;
+  }
+ 
+ private:
+  Debug() {}
+  ~Debug() {}
+};
+
 size_t Jacobsthal(size_t n);
 
 #endif  // PMERGEME_HPP
+
+
+//template <class T>
+//Debug<T>& Debug<T>::operator<<(T t) {
+//  std::cout << t;
+//  return *this;
+//  (void)t;  // 未使用変数の警告を出さないための記述
+//}
+//
+//template <class T>
+//Debug<T> &Debug<T>::cout() {
+//  static Debug<T> instance;
+//  return instance;
+//}
 
 // ソートするメインの関数
 template <class Container>
@@ -105,6 +136,7 @@ void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
 }
 
 // https://en.cppreference.com/w/cpp/algorithm/lower_bound の実装を参考に
+// chunk_sizeを考慮してlower_bound(二分探索)を行う関数
 template <class Container>
 typename PmergeMe<Container>::Iterator PmergeMe<Container>::LowerBound(
     Iterator first, Iterator last, const Iterator value, size_t chunk_size) {
@@ -118,7 +150,12 @@ typename PmergeMe<Container>::Iterator PmergeMe<Container>::LowerBound(
     it = first;
     step = count / 2;
     std::advance(it, step * chunk_size);
-    std::cout << "比較 : " << *value << " : " << *it << std::endl;
+    // std::cout << "比較 : " << *value << " : " << *it << std::endl;
+    Debug::cout() << "比較 : " << *value << " : " << *it << "\n"; 
+    Debug("比較 : ");
+    Debug(value);
+    Debug(it);
+    Debug("\n");
     if (*value > *it) {
       first = Advance(it, chunk_size);
       count -= step + 1;
@@ -129,7 +166,7 @@ typename PmergeMe<Container>::Iterator PmergeMe<Container>::LowerBound(
   return first;
 }
 
-// 何個目に比較されるのかを計算(累進でヤコブ計算)
+// n番がヤコブスタール数列の何番目かを計算する
 template <class Container>
 size_t PmergeMe<Container>::CalcJacob(size_t n, size_t max_size) {
   size_t i = 0;
@@ -151,28 +188,6 @@ size_t PmergeMe<Container>::CalcJacob(size_t n, size_t max_size) {
   return ++jacob_progressive_nbr + jacob_nbr - diff;
 }
 
-// ヤコブスタール数の後ろから
-template <class Container>
-void PmergeMe<Container>::InsertBack(Container &container,
-                                     const Iterator &reverse_end_it,
-                                     const Iterator &reverse_first_it,
-                                     size_t chunk_size) {
-  Iterator begin = container.begin();
-
-  for (Iterator it = reverse_first_it; it != reverse_end_it;
-       std::advance(it, -chunk_size * 2)) {
-    Iterator compared_it_end =
-        LowerBound(Advance(begin, chunk_size - 1), reverse_first_it,
-                   reverse_first_it, chunk_size);
-    std::cout << "ここ reverse_first_it: " << *reverse_first_it
-              << ", com: " << *compared_it_end << std::endl;
-    if (reverse_first_it != compared_it_end)
-      std::rotate(Advance(compared_it_end, 1 - chunk_size),
-                  Advance(reverse_first_it, 1 - chunk_size),
-                  Advance(reverse_first_it, 1));
-  }
-}
-
 // 　チャンクを考慮して、インサーションソートを行う
 template <class Container>
 void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
@@ -184,11 +199,15 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
   size_t container_size = container.size();
   size_t insert_container_size = 0;
 
-// コンテナを分割する
+  // コンテナを分割する
   for (size_t i = 0; i * chunk_size < container_size; ++i) {
     if (i % 2 == 0) {
-      insert_container.insert(insert_container.end(), begin, end);
-      ++insert_container_size;
+      if (end == container.end() && chunk_size != 1)
+        inserted_container.insert(inserted_container.end(), begin, end);
+      else {
+        insert_container.insert(insert_container.end(), begin, end);
+        ++insert_container_size;
+      }
     } else {
       inserted_container.insert(inserted_container.end(), begin, end);
     }
@@ -202,41 +221,13 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
     }
   }
 
-  //  // コンテナを分割する
-  //  for (size_t i = 0; i + chunk_size*2 < container_size; i += chunk_size*2) {
-  //    insert_container.insert(insert_container.end(), Advance(it, i),
-  //                            Advance(it, i + chunk_size));
-  //    inserted_container.insert(inserted_container.end(), Advance(it, i +
-  //    chunk_size),
-  //                              Advance(it, i + chunk_size * 2));
-  //    ++insert_container_size;
-  //  }
-  //  if (container_size % (chunk_size * 2) != 0) {
-  //    // 余りがある場合
-  //    // 余りがchunk_size以下の場合
-  //    if (container_size % (chunk_size * 2) <= chunk_size) {
-  //      inserted_container.insert(insert_container.end(),
-  //      Advance(it, insert_container_size * chunk_size * 2),
-  //                              container.end());
-  //    } else { // 余りがchunk_sizeより大きい場合
-  //      insert_container.insert(insert_container.end(),
-  //      Advance(it,insert_container_size * chunk_size * 2),
-  //                              Advance(it, insert_container_size * chunk_size
-  //                              * 2 + chunk_size));
-  //      inserted_container.insert(inserted_container.end(),
-  //      Advance(it, insert_container_size * chunk_size * 2 + chunk_size),
-  //                              container.end());
-  //                              ++ insert_container_size;
-  //    }
-  //  }
-  //
-  std::cout << insert_container_size << " : insert_container_size\n";
-  std::cout << "insert_container   : ";
+  Debug("insert_container : ");
   Debug(insert_container, chunk_size);
-  std::cout << "inserted_container : ";
+  Debug("inserted_container : ");
   Debug(inserted_container, chunk_size);
 
-  // 　比較対象
+  // 分割したコンテナを結合していく
+  // insert_containerをinserted_containerに挿入していく
   for (size_t i = 0; i < insert_container_size; ++i) {
     size_t jaco = CalcJacob(i, insert_container_size - 1);
     std::cout << "test : " << i << " : " << jaco << " ";
@@ -252,63 +243,16 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
           LowerBound(Advance(inserted_container.begin(), chunk_size - 1),
                      Advance(inserted_it, chunk_size - 1 + chunk_size * i),
                      Advance(insert_it, chunk_size - 1), chunk_size);
-      std::cout << "--\n";
-      std::cout << "it : " << *it << " : \n";
-      std::cout << "Advance(inserted_container.begin(), chunk_size - 1) : "
-                << *Advance(inserted_container.begin(), chunk_size - 1)
-                << " : \n";
-      std::cout << "Advance(inserted_it, chunk_size - 1) : "
-                << *Advance(inserted_it, chunk_size - 1) << " : \n";
-      std::cout << "Advance(insert_it, chunk_size - 1) : "
-                << *Advance(insert_it, chunk_size - 1) << " : ";
-      std::cout << std::endl;
-      std::cout << "--\n";
       inserted_container.insert(Advance(it, 1 - chunk_size), insert_it,
                                 Advance(insert_it, chunk_size));
     }
   }
   container = inserted_container;
-  std::cout << "inserted_container : ";
   Debug(inserted_container, chunk_size);
-  std::cout << "--------------------------\n\n";
-
-  // // 必要なヤコブスタール数の配列をgetする
-  // // ヤコブスタールに則ったコンテナを作成する
-  // // インサートソートを作成する
-  // std::cout << "-- chunk_size : " << chunk_size << " -- " << std::endl;
-  // size_t container_size = container.size();
-  // size_t elem_num = container_size / chunk_size * 2;
-  // Iterator jacob_container;
-  // for (size_t i = 0; i < elem_num; ++i) {
-  //   jacob_container.push_back(Jacobsthal(i));
-  // }
-  // size_t jacob_nbr;
-  // size_t jacob_progressive_nbr = 0;
-  // size_t reverse_first_point = 0;
-  // Iterator begin = container.begin();
-  // Iterator reverse_first_it;
-  // Iterator reverse_end_it = Advance(begin, chunk_size - 1);
-
-  // for (size_t i = 1;; ++i) {
-  //   // ヤコブスタール数は２倍の値かつ累進にする
-  //   jacob_nbr = Jacobsthal(i);
-  //   jacob_progressive_nbr += jacob_nbr;
-  //   if (jacob_nbr == 0) continue;
-  //   reverse_first_point =
-  //       jacob_progressive_nbr * chunk_size * 2 + chunk_size - 1;
-  //   // 範囲内にあるか確かめる(なかったら、納める)
-  //   while (container_size < reverse_first_point)
-  //     reverse_first_it -= chunk_size * 2;
-  //   // 挿入する側のコンテナを別のコンテナに移動させる。
-  //   // TODO : ここで、コンテナを移動させる
-  //   reverse_first_it = Advance(begin, reverse_first_point);
-  //   InsertBack(container, reverse_end_it, reverse_first_it, chunk_size);
-  //   Debug(container, chunk_size);
-  //   reverse_end_it = reverse_first_it;
-  // }
+  Debug("----------------------\n\n");
 }
 
-// std::advance でイテレーターを返すようにを使いやすく
+// std::advanceが参照ではなくiteratorを返すように変更した関数
 template <class Container>
 typename PmergeMe<Container>::Iterator PmergeMe<Container>::Advance(
     Iterator it, long long int count) {
@@ -316,7 +260,7 @@ typename PmergeMe<Container>::Iterator PmergeMe<Container>::Advance(
   return it;
 }
 
-// デバック用
+// コンテナのデバック用
 template <class Container>
 void PmergeMe<Container>::Debug(Container &container, size_t size) {
   std::cout << "debug : ";
@@ -333,4 +277,16 @@ void PmergeMe<Container>::Debug(Container &container, size_t size) {
     count++;
   }
   std::cout << "\033[0m" << std::endl;
+}
+
+// 文字列のデバック用
+template <class Container>
+void PmergeMe<Container>::Debug(std::string str) {
+  std::cout << str;
+}
+
+// iteratorのデバック用
+template <class Container>
+void PmergeMe<Container>::Debug(Iterator it) {
+  std::cout << *it;
 }
