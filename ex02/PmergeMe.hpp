@@ -111,7 +111,8 @@ void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
 
 // reserveが可能な場合にreserveを行う関数
 template <class Container>
-void reserve_if_possible(Container& container, typename Container::size_type size) {
+void reserve_if_possible(Container &container,
+                         typename Container::size_type size) {
   // Do nothing for the general case
   (void)container;
   (void)size;
@@ -119,7 +120,8 @@ void reserve_if_possible(Container& container, typename Container::size_type siz
 
 // reserveが可能な場合にreserveを行う関数
 template <class T>
-void reserve_if_possible(std::vector<T>& container, typename std::vector<T>::size_type size) {
+void reserve_if_possible(std::vector<T> &container,
+                         typename std::vector<T>::size_type size) {
   container.reserve(size);
 }
 
@@ -194,7 +196,8 @@ void PmergeMe<Container>::InsertIntegrate(size_t chunk_size,
     if (jaco == 0) {
       inserted_container.insert(inserted_container.begin(), insert_it,
                                 Advance(insert_it, chunk_size));
-      DebugContainer(inserted_container, chunk_size, inserted_container.begin(),Advance(inserted_container.begin(),chunk_size));
+      DebugContainer(inserted_container, chunk_size, inserted_container.begin(),
+                     Advance(inserted_container.begin(), chunk_size));
     } else {
       Iterator inserted_it =
           Advance(inserted_container.begin(), jaco * chunk_size);
@@ -204,7 +207,9 @@ void PmergeMe<Container>::InsertIntegrate(size_t chunk_size,
                      Advance(insert_it, chunk_size - 1), chunk_size);
       inserted_container.insert(Advance(it, 1 - chunk_size), insert_it,
                                 Advance(insert_it, chunk_size));
-      DebugContainer(inserted_container, chunk_size,Advance(it, 1 - chunk_size), Advance(inserted_it,chunk_size * i));
+      DebugContainer(inserted_container, chunk_size,
+                     Advance(it, 1 - chunk_size),
+                     Advance(inserted_it, chunk_size * i));
     }
   }
   container = inserted_container;
@@ -304,12 +309,12 @@ void PmergeMe<Container>::DebugContainer(Container &container, size_t size,
     else if (count != 0)
       Debug::cout() << " ";
     if (it == it1)
-      Debug::cout() << YELLOW << *it ;
+      Debug::cout() << YELLOW << *it;
     else if (it == it2)
       Debug::cout() << ORANGE << *it;
     else
       Debug::cout() << *it;
     count++;
   }
-  Debug::cout() << GRAY<<"]\n" << DEFAULT;
+  Debug::cout() << GRAY << "]\n" << DEFAULT;
 }
