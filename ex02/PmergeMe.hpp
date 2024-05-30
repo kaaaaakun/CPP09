@@ -20,14 +20,23 @@ class PmergeMe {
                                           Container &container);
   static void ChunkedMergeSort(size_t chunk_size, Container &container);
   static void ChunkedInsertSort(size_t chunk_size, Container &container);
+
+  static void SplitContainer(size_t chunk_size, Container &container,
+                             Container &insert_container,
+                             Container &inserted_container,
+                             size_t &insert_container_size);
+  static void InsertIntegrate(size_t chunk_size, Container &container,
+                              Container &insert_container,
+                              Container &inserted_container,
+                              size_t insert_container_size);
+
   static Container ArgvToIntContainer(char *argv[]);
+
   static Iterator Advance(Iterator it, long long int count);
   static Iterator LowerBound(Iterator first, Iterator last,
                              const Iterator value, size_t chunk_size);
   static void DebugContainer(Container &container, size_t size);
-
   static size_t CalcJacob(size_t n, size_t max_size);
-
  public:
   static Container Sort(char *argv[]);
 };
@@ -42,14 +51,6 @@ Container PmergeMe<Container>::Sort(char *argv[]) {
   Container container;
   container = ArgvToIntContainer(argv);
   RecursiveMergeInsertionSort(1, container);
-  return container;
-}
-
-// ダブルポインタからコンテナに変換する関数
-template <class Container>
-Container PmergeMe<Container>::ArgvToIntContainer(char *argv[]) {
-  Container container;
-  for (int i = 1; argv[i] != NULL; ++i) container.push_back(std::atoi(argv[i]));
   return container;
 }
 
@@ -68,7 +69,7 @@ void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
   DebugContainer(container, chunk_size);
 }
 
-// チャンクごとにマージソートを行う
+// チャンクごとにマージソートを行う関数
 template <class Container>
 void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
                                            Container &container) {
@@ -89,16 +90,39 @@ void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
   }
 }
 
-// 　チャンクを考慮して、インサーションソートを行う
+// チャンクを考慮して、インサーションソートを行う関数
 template <class Container>
 void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
                                             Container &container) {
   Container insert_container;
   Container inserted_container;
+  size_t insert_container_size = 0;
+
+  SplitContainer(chunk_size, container, insert_container, inserted_container,
+                 insert_container_size);
+
+  Debug::cout() << "insert_container : ";
+  DebugContainer(insert_container, chunk_size);
+  Debug::cout() << "inserted_container : ";
+  DebugContainer(inserted_container, chunk_size);
+
+  InsertIntegrate(chunk_size, container, insert_container, inserted_container,
+                  insert_container_size);
+
+  DebugContainer(inserted_container, chunk_size);
+  Debug::cout() << "----------------------\n\n";
+}
+
+// コンテナを挿入するコンテナと挿入されるコンテナに分割する関数
+template <class Container>
+void PmergeMe<Container>::SplitContainer(size_t chunk_size,
+                                         Container &container,
+                                         Container &insert_container,
+                                         Container &inserted_container,
+                                         size_t &insert_container_size) {
   Iterator begin = container.begin();
   Iterator end = Advance(begin, chunk_size);
   size_t container_size = container.size();
-  size_t insert_container_size = 0;
 
   // コンテナを分割する
   for (size_t i = 0; i * chunk_size < container_size; ++i) {
@@ -121,14 +145,17 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
       std::advance(end, chunk_size);
     }
   }
+}
 
-  Debug::cout() << "insert_container : ";
-  DebugContainer(insert_container, chunk_size);
-  Debug::cout() << "inserted_container : ";
-  DebugContainer(inserted_container, chunk_size);
-
-  // 分割したコンテナを結合していく
-  // insert_containerをinserted_containerに挿入していく
+// 分割したコンテナを結合していく
+// insert_containerをinserted_containerに挿入していく
+// その時ヤコブスタール数列とチャンクを考慮して挿入していく
+template <class Container>
+void PmergeMe<Container>::InsertIntegrate(size_t chunk_size,
+                                          Container &container,
+                                          Container &insert_container,
+                                          Container &inserted_container,
+                                          size_t insert_container_size) {
   for (size_t i = 0; i < insert_container_size; ++i) {
     size_t jaco = CalcJacob(i, insert_container_size - 1);
     Debug::cout() << "test : " << i << " : " << jaco << " ";
@@ -149,11 +176,17 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
     }
   }
   container = inserted_container;
-  DebugContainer(inserted_container, chunk_size);
-  Debug::cout() << "----------------------\n\n";
 }
 
 // utils系 ------------------------------------------------------------------ //
+
+// ダブルポインタからコンテナに変換する関数
+template <class Container>
+Container PmergeMe<Container>::ArgvToIntContainer(char *argv[]) {
+  Container container;
+  for (int i = 1; argv[i] != NULL; ++i) container.push_back(std::atoi(argv[i]));
+  return container;
+}
 
 // n番がヤコブスタール数列の何番目かを計算する
 template <class Container>
