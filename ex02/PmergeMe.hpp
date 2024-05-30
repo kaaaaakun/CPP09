@@ -13,6 +13,7 @@
 #define DEFAULT "\x1b[0m"
 #define GREEN "\x1b[38;5;40m"
 #define GRAY "\x1b[38;5;238m"
+#define GRAY2 "\x1b[38;5;245m"
 #define ORANGE "\x1b[38;5;208m"
 
 template <class Container>
@@ -41,9 +42,10 @@ class PmergeMe {
   static Iterator Advance(Iterator it, long long int count);
   static Iterator LowerBound(Iterator first, Iterator last,
                              const Iterator value, size_t chunk_size);
-  static void DebugContainer(Container &container, size_t size);
-  static void DebugContainer(Container &container, size_t size, Iterator it1,
-                             Iterator it2);
+  static void DebugContainer(std::string str, Container &container,
+                             size_t size);
+  static void DebugContainer(std::string str, Container &container, size_t size,
+                             Iterator it1, Iterator it2);
   static size_t CalcJacob(size_t n, size_t max_size);
 
  public:
@@ -51,6 +53,12 @@ class PmergeMe {
 };
 
 size_t Jacobsthal(size_t n);
+template <class Container>
+void reserve_if_possible(Container &container,
+                         typename Container::size_type size);
+template <class T>
+void reserve_if_possible(std::vector<T> &container,
+                         typename std::vector<T>::size_type size);
 
 #endif  // PMERGEME_HPP
 
@@ -78,8 +86,6 @@ void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
     return;
   Debug::cout() << YELLOW << "\n-- chunk_size : " << chunk_size << " --"
                 << DEFAULT << "\n";
-  Debug::cout() << "main_container     : ";
-  DebugContainer(container, chunk_size);
   ChunkedInsertSort(chunk_size, container);
 }
 
@@ -90,39 +96,21 @@ void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
   size_t container_size = container.size();
   Iterator it = container.begin();
 
-  Debug::cout() << "before:";
-  DebugContainer(container, chunk_size);
+  DebugContainer("before", container, chunk_size);
   for (size_t i = 0; i + chunk_size * 2 <= container_size;
        i += chunk_size * 2) {
     Iterator it0 = Advance(it, i);
     Iterator it1 = Advance(it, i + chunk_size - 1);
     Iterator it2 = Advance(it, i + chunk_size * 2 - 1);
     Debug::cout() << "比較  :";
-    DebugContainer(container, chunk_size, it1, it2);
+    DebugContainer("比較 ", container, chunk_size, it1, it2);
     if (*it2 < *it1) {
       std::advance(it1, 1);
       std::advance(it2, 1);
       std::rotate(it0, it1, it2);
     }
   }
-  Debug::cout() << "after :";
-  DebugContainer(container, chunk_size);
-}
-
-// reserveが可能な場合にreserveを行う関数
-template <class Container>
-void reserve_if_possible(Container &container,
-                         typename Container::size_type size) {
-  // Do nothing for the general case
-  (void)container;
-  (void)size;
-}
-
-// reserveが可能な場合にreserveを行う関数
-template <class T>
-void reserve_if_possible(std::vector<T> &container,
-                         typename std::vector<T>::size_type size) {
-  container.reserve(size);
+  DebugContainer("after ", container, chunk_size);
 }
 
 // チャンクを考慮して、インサーションソートを行う関数
@@ -136,12 +124,6 @@ void PmergeMe<Container>::ChunkedInsertSort(size_t chunk_size,
   reserve_if_possible(inserted_container, container.size());
   SplitContainer(chunk_size, container, insert_container, inserted_container,
                  insert_container_size);
-
-  Debug::cout() << "insert_container   : ";
-  DebugContainer(insert_container, chunk_size);
-  Debug::cout() << "inserted_container : ";
-  DebugContainer(inserted_container, chunk_size);
-  Debug::cout() << "\n";
 
   InsertIntegrate(chunk_size, container, insert_container, inserted_container,
                   insert_container_size);
@@ -179,6 +161,10 @@ void PmergeMe<Container>::SplitContainer(size_t chunk_size,
       std::advance(end, chunk_size);
     }
   }
+  DebugContainer("│ main_container    ", container, chunk_size);
+  DebugContainer("│ insert_container  ", insert_container, chunk_size);
+  DebugContainer("│ inserted_container", inserted_container, chunk_size);
+  Debug::cout() << "\n";
 }
 
 // 分割したコンテナを結合していく
@@ -196,7 +182,8 @@ void PmergeMe<Container>::InsertIntegrate(size_t chunk_size,
     if (jaco == 0) {
       inserted_container.insert(inserted_container.begin(), insert_it,
                                 Advance(insert_it, chunk_size));
-      DebugContainer(inserted_container, chunk_size, inserted_container.begin(),
+      DebugContainer("debug", inserted_container, chunk_size,
+                     inserted_container.begin(),
                      Advance(inserted_container.begin(), chunk_size));
     } else {
       Iterator inserted_it =
@@ -207,7 +194,7 @@ void PmergeMe<Container>::InsertIntegrate(size_t chunk_size,
                      Advance(insert_it, chunk_size - 1), chunk_size);
       inserted_container.insert(Advance(it, 1 - chunk_size), insert_it,
                                 Advance(insert_it, chunk_size));
-      DebugContainer(inserted_container, chunk_size,
+      DebugContainer("debug", inserted_container, chunk_size,
                      Advance(it, 1 - chunk_size),
                      Advance(inserted_it, chunk_size * i));
     }
@@ -282,27 +269,29 @@ typename PmergeMe<Container>::Iterator PmergeMe<Container>::Advance(
 
 // コンテナのデバック用
 template <class Container>
-void PmergeMe<Container>::DebugContainer(Container &container, size_t size) {
-  Debug::cout() << GRAY << "debug : [";
+void PmergeMe<Container>::DebugContainer(std::string str, Container &container,
+                                         size_t size) {
+  Debug::cout() << GRAY2 << str << GRAY << " : [" << GRAY2;
   size_t count = 0;
   for (Iterator it = container.begin(); it != container.end(); ++it) {
     if (count % size == 0 && count != 0)
-      Debug::cout() << "]" << GREEN << "." << GRAY << "[";
+      Debug::cout() << GRAY << "]" << GREEN << "." << GRAY << "[" << GRAY2;
     else if (count != 0)
       Debug::cout() << " ";
-    Debug::cout() << DEFAULT << *it << GRAY;
+    Debug::cout() << *it;
     count++;
   }
-  Debug::cout() << "]\n" << DEFAULT;
+  Debug::cout() << GRAY << "]\n" << DEFAULT;
 }
 
 template <class Container>
-void PmergeMe<Container>::DebugContainer(Container &container, size_t size,
-                                         Iterator it1, Iterator it2) {
+void PmergeMe<Container>::DebugContainer(std::string str, Container &container,
+                                         size_t size, Iterator it1,
+                                         Iterator it2) {
   size_t count = 0;
   if (it1 == it2) std::advance(it2, -size);
 
-  Debug::cout() << GRAY << "debug : [";
+  Debug::cout() << GRAY << str << " : [";
   for (Iterator it = container.begin(); it != container.end(); ++it) {
     if (count % size == 0 && count != 0)
       Debug::cout() << GRAY << "]" << GREEN << "." << GRAY << "[";
@@ -317,4 +306,19 @@ void PmergeMe<Container>::DebugContainer(Container &container, size_t size,
     count++;
   }
   Debug::cout() << GRAY << "]\n" << DEFAULT;
+}
+
+// reserveが可能な場合にreserveを行う関数
+template <class Container>
+void reserve_if_possible(Container &container,
+                         typename Container::size_type size) {
+  // Do nothing for the general case
+  (void)container;
+  (void)size;
+}
+// reserveが可能な場合にreserveを行う関数
+template <class T>
+void reserve_if_possible(std::vector<T> &container,
+                         typename std::vector<T>::size_type size) {
+  container.reserve(size);
 }
