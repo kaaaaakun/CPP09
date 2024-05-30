@@ -1,6 +1,7 @@
 #ifndef DEBUG_HPP
 #define DEBUG_HPP
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -9,12 +10,22 @@ class Debug {
   // テンプレートクラスとして実装できないので、クラス内部で実装
   template <class T>
   Debug &operator<<(T t) {
-    #ifdef DEBUG
+#ifdef DEBUG
     std::cout << t;
-    #endif
+#endif
     return *this;
     (void)t;
   }
+
+  template <class T>
+  Debug &operator<<(const T *t) {
+#ifdef DEBUG
+    std::cout << t;
+#endif
+    return *this;
+    (void)t;
+  }
+
   static Debug &cout() {
     static Debug instance;
     return instance;
