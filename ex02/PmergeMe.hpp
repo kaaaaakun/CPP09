@@ -219,8 +219,6 @@ typename PmergeMe<Container>::Iterator PmergeMe<Container>::LowerBound(
   size_t count, step;
   count = std::distance(first, last) / chunk_size;
 
-  std::cout << count << " : count\n";
-
   while (0 < count) {
     it = first;
     step = count / 2;

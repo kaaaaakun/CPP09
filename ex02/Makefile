@@ -30,7 +30,7 @@ CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -MMD -MP
 
 # -- debug flags --
 NAME_DEBUG  = $(NAME)_debug
-DEBUG_FLAGS = -fsanitize=address -fsanitize=bounds
+DEBUG_FLAGS = -fsanitize=address -fsanitize=bounds -DDEBUG
 OBJS_DEBUG  = $(addprefix $(OBJDIR)/, $(SRCDIR)/$(SRCS:.cpp=.o.debug))
 
 # -- command define	--
@@ -68,28 +68,34 @@ $(OBJDIR)/%.o.debug: $(SRCDIR)/%.cpp
 	@ mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
+# Define ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+YELLOW = \x1b[38;5;228m
+DEFAULT = \x1b[0m
+
 # Other targets +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 .PHONY: format run test
 
 format:
 	clang-format --style=Google -i $(SRCS) $(HEADERS)
 
-run: $(NAME)
-	#./$(NAME) 21 20 17 16 19 18 15 14 13 12 11 10 9 5 3 4 1 6 7 2 8
-	./$(NAME) 21 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11
-	@echo -n "比較回数 : "
-	./$(NAME) 21 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11 | grep 比較|wc -l
+debug_test: $(NAME_DEBUG)
+	@ echo "$(YELLOW) \n---  要素数が21個の時のdebug付きのテスト ---$(DEFAULT)"
+	./$(NAME_DEBUG) 21 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11
+	@echo "\n $(YELLOW)比較回数 : "
+	@./$(NAME_DEBUG) 21 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11 | grep 比較|wc -l
+	@echo "-------------------$(DEFAULT)"
 
-run2: $(NAME)
-	./$(NAME) 1 21 20 19 17 10 16 15 14 13 12 11 18 9 8 7 6 5 4 3 2 
+run: $(NAME)
+	@ echo "$(YELLOW) \n---  要素数が21個の時のテスト ---$(DEFAULT)"
+	./$(NAME) 21 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11
 
 test: $(NAME)
-	@ echo "---  subject nomal test "
+	@ echo "$(YELLOW) \n---  subject nomal test$(DEFAULT)"
 	./$(NAME) 3 5 9 7 4
-	@ echo "---  subject huge test"
+	@ echo "$(YELLOW) \n---  subject huge  test$(DEFAULT)"
 	./$(NAME) `shuf -i 1-100000 -n 3000 | tr "\n" " "`
-	@ echo "---  subject error test"
-	./$(NAME) "-1" "2"
+	@ echo "$(YELLOW) \n---  subject error test$(DEFAULT)"
+	./$(NAME) "-1" "2"; echo "$(YELLOW)--- $(DEFAULT)"
 	
 -include $(DEPENDS)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
