@@ -102,8 +102,7 @@ void PmergeMe<Container>::ChunkedMergeSort(size_t chunk_size,
     Iterator it0 = Advance(it, i);
     Iterator it1 = Advance(it, i + chunk_size - 1);
     Iterator it2 = Advance(it, i + chunk_size * 2 - 1);
-    Debug::cout() << "比較  :";
-    DebugContainer("比較 ", container, chunk_size, it1, it2);
+    DebugContainer("比較  ", container, chunk_size, it1, it2);
     if (*it2 < *it1) {
       std::advance(it1, 1);
       std::advance(it2, 1);
