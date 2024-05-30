@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "PmergeMe.hpp"
+#include "StopWatch.hpp"
 
 bool CheckArgs(char *argv[]) {
   for (size_t i = 0; argv[i] != NULL; ++i) {
@@ -49,6 +50,7 @@ void PutSorted(Container &container) {
   }
   std::cout << std::endl;
 }
+
 int main(int argc, char *argv[]) {
   try {
     if (argc < 2 || !CheckArgs(&argv[1])) {
