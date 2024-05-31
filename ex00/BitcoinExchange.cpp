@@ -108,6 +108,8 @@ const std::pair<std::string, std::string> DataBase::LowerBound(
     } else
       count = step;
   }
+  if (key < first->first)
+    throw std::invalid_argument("Error: long time ago : " + key);
   return (make_pair(first->first, first->second));
 }
 
