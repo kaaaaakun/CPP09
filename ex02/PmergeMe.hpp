@@ -82,7 +82,7 @@ void PmergeMe<Container>::RecursiveMergeInsertionSort(size_t chunk_size,
   ChunkedMergeSort(chunk_size, container);
   if (chunk_size * 4 <= container_size)
     RecursiveMergeInsertionSort(chunk_size * 2, container);
-  else
+  else if (chunk_size != 1)
     return;
   Debug::cout() << YELLOW << "\n-- chunk_size : " << chunk_size << " --"
                 << DEFAULT << "\n";
