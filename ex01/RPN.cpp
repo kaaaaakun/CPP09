@@ -20,12 +20,12 @@ double RPN::Execute(std::string str) {
       continue;
     } else {
       throw std::invalid_argument(
-          "Error: invalid argument: 計算ができないよ(ó﹏ò｡)");
+          "Error: invalid argument");
     }
   }
   if (st.size() != 1)
     throw std::invalid_argument(
-        "Error: invalid argument: 計算ができないよｽﾞｲ₍₍ (ง ˘ω˘ )ว ⁾⁾ｽﾞｲ");
+        "Error: invalid argument");
 
   ss << st.top();
   ss >> ret;
@@ -73,7 +73,7 @@ void RPN::Calculate(std::stack<std::string>& st, std::string ope) {
   double num2, num1, result = 0;
 
   if (st.size() < 2)
-    throw std::invalid_argument("Error: invalid argument: 計算ができないよ ><");
+    throw std::invalid_argument("Error: invalid argument");
   num2 = StrToDouble(st.top());
   st.pop();
   num1 = StrToDouble(st.top());
