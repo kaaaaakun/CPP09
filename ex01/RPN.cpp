@@ -19,13 +19,10 @@ double RPN::Execute(std::string str) {
     } else if (i == str.size()) {
       continue;
     } else {
-      throw std::invalid_argument(
-          "Error: invalid argument");
+      throw std::invalid_argument("Error: invalid argument");
     }
   }
-  if (st.size() != 1)
-    throw std::invalid_argument(
-        "Error: invalid argument");
+  if (st.size() != 1) throw std::invalid_argument("Error: invalid argument");
 
   ss << st.top();
   ss >> ret;
@@ -48,10 +45,13 @@ double RPN::StrToDouble(std::string str) {
 void RPN::IsValidDouble(std::string str) {
   int count = 0;
 
+  if ((str.size() == 3 && (str == "inf" || str == "nan")) ||
+      (str.size() == 4 && (str == "-inf" || str == "-nan")))
+    return;
   if (str[count] == '+' || str[count] == '-') count++;
   while (str[count] != '\0' && str[count] != '.') {
     if (!isdigit(str[count]))
-      throw std::invalid_argument("Error: invalid argument: 数字以外がるよ");
+      throw std::invalid_argument("Error: invalid argument: 数字以外があるよ");
     count++;
   }
   if (str[count] == '\0')
@@ -72,8 +72,7 @@ void RPN::IsValidDouble(std::string str) {
 void RPN::Calculate(std::stack<std::string>& st, std::string ope) {
   double num2, num1, result = 0;
 
-  if (st.size() < 2)
-    throw std::invalid_argument("Error: invalid argument");
+  if (st.size() < 2) throw std::invalid_argument("Error: invalid argument");
   num2 = StrToDouble(st.top());
   st.pop();
   num1 = StrToDouble(st.top());
