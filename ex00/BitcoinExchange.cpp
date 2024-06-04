@@ -88,34 +88,18 @@ const DataBase& DataBase::operator=(const DataBase& other) {
   return *this;
 }
 
-// https://en.cppreference.com/w/cpp/algorithm/lower_bound の実装を参考に
+// https://en.cppreference.com/w/cpp/algorithm/lower_bound から引用して、
+// 見つからなかった時はそれ以前の日付を返すように変更
 const std::pair<std::string, std::string> DataBase::LowerBound(
     std::string key) const {
   std::map<std::string, std::string>::const_iterator it;
-  it = dataBase_map_.lower_bound(key);
-  return (make_pair(it->first, it->second));
-
-
-
-  std::map<std::string, std::string>::const_iterator first =
-      dataBase_map_.begin();
-  std::string comp;
-  size_t step;
-  size_t count = size_;
-
-  while (0 < count) {
-    it = first;
-    step = count / 2;
-    std::advance(it, step);
-    if (it->first < key) {
-      first = it;
-      count -= step + 1;
-    } else
-      count = step;
-  }
-  if (key < first->first)
+  
+  if (key < dataBase_map_.begin()->first)
     throw std::invalid_argument("Error: long time ago : " + key);
-  return (make_pair(first->first, first->second));
+  it = dataBase_map_.lower_bound(key);
+  if (it->first == key) return (make_pair(it->first, it->second));
+  if (it != dataBase_map_.begin()) --it;
+  return (make_pair(it->first, it->second));
 }
 
 //-- -- --  -- utils -- -- --  -- //
