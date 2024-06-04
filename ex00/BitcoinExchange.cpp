@@ -94,11 +94,11 @@ const std::pair<std::string, std::string> DataBase::LowerBound(
     std::string key) const {
   std::map<std::string, std::string>::const_iterator it;
   
-  if (key < dataBase_map_.begin()->first)
-    throw std::invalid_argument("Error: long time ago : " + key);
   it = dataBase_map_.lower_bound(key);
   if (it->first == key) return (make_pair(it->first, it->second));
-  if (it != dataBase_map_.begin()) --it;
+  if (key < dataBase_map_.begin()->first || it == dataBase_map_.begin())
+    throw std::invalid_argument("Error: long time ago : " + key);
+  --it;
   return (make_pair(it->first, it->second));
 }
 
