@@ -91,9 +91,14 @@ const DataBase& DataBase::operator=(const DataBase& other) {
 // https://en.cppreference.com/w/cpp/algorithm/lower_bound の実装を参考に
 const std::pair<std::string, std::string> DataBase::LowerBound(
     std::string key) const {
+  std::map<std::string, std::string>::const_iterator it;
+  it = dataBase_map_.lower_bound(key);
+  return (make_pair(it->first, it->second));
+
+
+
   std::map<std::string, std::string>::const_iterator first =
       dataBase_map_.begin();
-  std::map<std::string, std::string>::const_iterator it;
   std::string comp;
   size_t step;
   size_t count = size_;
@@ -222,6 +227,7 @@ bool SetLine(std::string line, std::string delimiter,
   if (pos == std::string::npos) return false;
   pair.first = utils::SkipSpace(line.substr(0, pos));
   pair.second = utils::SkipSpace(line.substr(pos + 1));
+  if (pair.second == "") return false;
   return true;
 }
 
