@@ -6,7 +6,7 @@
 #    By: tokazaki <tokazaki@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/07 16:08:51 by tokazaki          #+#    #+#              #
-#    Updated: 2024/05/05 09:35:37 by tokazaki         ###   ########.fr        #
+#    Updated: 2024/06/07 15:11:20 by tokazaki         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -76,6 +76,12 @@ format:
 
 run: $(NAME)
 	./$(NAME) input.txt
+	@echo "$(YELLOW) \n--- input.txtの内容 ---$(DEFAULT)"
+	@cat input.txt
+	@echo "$(YELLOW) \n--- 対応するdata.csvの内容---$(DEFAULT)"
+	@for date in $$(seq -f "2011-01-%02g" 1 10) $$(seq -f "2012-01-%02g" 10 13); do \
+		grep $$date data.csv; \
+	done
 
 -include $(DEPENDS)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
