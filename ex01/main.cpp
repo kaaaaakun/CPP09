@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     double ret = RPN::Execute(argv[1]);
-    std::cout << std::fixed << std::setprecision(0) << ret << std::endl;
+    std::cout << std::setprecision(5) << ret << std::endl;
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
   }

@@ -87,5 +87,6 @@ void RPN::Calculate(std::stack<std::string>& st, std::string ope) {
   else if (ope == "/")
     result = num1 / num2;
 
+  //    std::cout << result << std::endl;
   st.push(std::to_string(result));
 }
